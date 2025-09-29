@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Waste Management System</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <style>
+        /* Modern CSS Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #4CAF50;
+            --primary-dark: #45a049;
+            --secondary-color: #FF9800;
+            --secondary-dark: #e68900;
+            --danger-color: #f44336;
+            --background-color: #f8fafc;
+            --card-background: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #4a5568;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --border-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background-color: var(--background-color);
+            overflow-x: hidden;
+        }
+
+        /* Page Management */
+        .page {
+            display: none;
+            min-height: 100vh;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header Styles */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            text-align: center;
+            padding: 120px 20px 80px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/><circle cx="50" cy="10" r="0.5" fill="white" opacity="0.1"/><circle cx="10" cy="60" r="0.5" fill="white" opacity="0.1"/><circle cx="90" cy="40" r="0.5" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            pointer-events: none;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .header h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+            margin-bottom: 2rem;
+            opacity: 0.95;
+            font-weight: 300;
+        }
+
+        /* Button Styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 24px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--card-background);
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #d32f2f;
+        }
+
+        /* Auth Page Styles */
+        .auth-container {
+            max-width: 500px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 4px;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px 16px;
+            background: transparent;
+            border: none;
+            border-radius: calc(var(--border-radius) - 4px);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+        }
+
+        .auth-tab.active {
+            background: var(--primary-color);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .auth-form {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: var(--card-background);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .form-control:invalid {
+            border-color: var(--danger-color);
+        }
+
+        /* Dashboard Styles */
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            margin-bottom: 3rem;
+            color: var(--primary-color);
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 4px;
+            background: var(--secondary-color);
+            border-radius: 2px;
+        }
+
+        /* Card Styles */
+        .card {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+            border: 1px solid var(--border-color);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        /* Points Display */
+        .points-display {
+            text-align: center;
+            background: linear-gradient(135deg, var(--secondary-color) 0%, var(--secondary-dark) 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            margin: 2rem auto;
+            max-width: 400px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .points-number {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Table Styles */
+        .table-container {
+            background: var(--card-background);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            margin-top: 2rem;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .table th {
+            background: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        /* Alert Styles */
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: var(--border-radius);
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .alert-error {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--danger-color);
+            border: 1px solid rgba(244, 67, 54, 0.2);
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text-primary);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .section {
+                padding: 2rem 1rem;
+            }
+            
+            .dashboard-header {
+                padding: 1rem;
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .card {
+                padding: 1.5rem;
+            }
+            
+            .auth-container {
+                margin: 1rem auto;
+            }
+            
+            .auth-form {
+                padding: 1.5rem;
+            }
+        }
+
+        /* Utility Classes */
+        .hidden { display: none !important; }
+        .text-center { text-align: center; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mt-2 { margin-top: 1rem; }
+        .w-full { width: 100%; }
+    </style>
+</head>
+<body>
+    <!-- Authentication Page -->
+    <div id="authPage" class="page active">
+        <div class="header">
+            <div class="header-content">
+                <h1>Smart Waste Management</h1>
+                <p>Segregate, Recycle, Reward – Make Your City Cleaner</p>
+                <button class="btn btn-primary" onclick="scrollToAuth()">Get Started</button>
+            </div>
+        </div>
+
+        <div class="auth-container">
+            <div class="auth-tabs">
+                <button class="auth-tab active" onclick="switchTab(event, 'login')">Login</button>
+                <button class="auth-tab" onclick="switchTab(event, 'signup')">Sign Up</button>
+                <button class="auth-tab" onclick="switchTab(event, 'forgot')">Forgot Password</button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm" class="auth-form active">
+                <h2 class="mb-2">Welcome Back</h2>
+                <p class="text-secondary mb-2">Sign in to your account to continue</p>
+                <form id="loginFormSubmit">
+                    <div class="form-group">
+                        <label for="loginUsername">Username</label>
+                        <input type="text" id="loginUsername" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">
+                        <span class="login-text">Sign In</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </form>
+                <div id="loginMsg"></div>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" class="auth-form">
+                <h2 class="mb-2">Create Account</h2>
+                <p class="text-secondary mb-2">Join us in making the world cleaner</p>
+                <form id="signupFormSubmit">
+                    <div class="form-group">
+                        <label for="signupUsername">Username</label>
+                        <input type="text" id="signupUsername" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupEmail">Email</label>
+                        <input type="email" id="signupEmail" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signupPassword">Password</label>
+                        <input type="password" id="signupPassword" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">
+                        <span class="signup-text">Create Account</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </form>
+                <div id="signupMsg"></div>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div id="forgotForm" class="auth-form">
+                <h2 class="mb-2">Reset Password</h2>
+                <p class="text-secondary mb-2">Enter your email to receive reset instructions</p>
+                <form id="forgotFormSubmit">
+                    <div class="form-group">
+                        <label for="forgotEmail">Email</label>
+                        <input type="email" id="forgotEmail" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">
+                        <span class="forgot-text">Send Reset Link</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </form>
+                <div id="forgotMsg"></div>
+            </div>
+        </div>
+
+        <!-- Points System Information -->
+        <div class="section">
+            <h2 class="section-title">Points System</h2>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Waste Type</th>
+                            <th>Points per KG</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Plastic</strong></td>
+                            <td>10 Points</td>
+                            <td>Bottles, containers, packaging materials</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Food</strong></td>
+                            <td>5 Points</td>
+                            <td>Organic waste, food scraps</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Electronic</strong></td>
+                            <td>15 Points</td>
+                            <td>E-waste, gadgets, electronic components</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Hazardous</strong></td>
+                            <td>20 Points</td>
+                            <td>Batteries, chemicals, toxic materials</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Other</strong></td>
+                            <td>8 Points</td>
+                            <td>Paper, cardboard, mixed materials</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Page -->
+    <div id="dashboardPage" class="page">
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">U</div>
+                <div>
+                    <div id="welcomeMsg" style="font-weight: 600; font-size: 1.1rem;">Welcome!</div>
+                    <div style="opacity: 0.8; font-size: 0.9rem;">Waste Management Dashboard</div>
+                </div>
+            </div>
+            <button class="btn btn-danger" onclick="logout()">Sign Out</button>
+        </div>
+
+        <!-- Points Display -->
+        <div class="points-display">
+            <div class="points-number" id="totalPoints">0</div>
+            <div>Total Points Earned</div>
+        </div>
+
+        <!-- Waste Report Form -->
+        <div class="section">
+            <div class="card" style="max-width: 600px; margin: 0 auto;">
+                <h2 class="mb-2">Report Waste</h2>
+                <form id="wasteForm">
+                    <div class="form-group">
+                        <label for="wasteType">Waste Type</label>
+                        <select id="wasteType" class="form-control" required>
+                            <option value="">Select waste type</option>
+                            <option value="Plastic">Plastic (10 pts/kg)</option>
+                            <option value="Food">Food (5 pts/kg)</option>
+                            <option value="Electronic">Electronic (15 pts/kg)</option>
+                            <option value="Hazardous">Hazardous (20 pts/kg)</option>
+                            <option value="Other">Other (8 pts/kg)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Weight (kg)</label>
+                        <input type="number" id="weight" class="form-control" min="0" step="0.1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-full">
+                        <span class="submit-text">Submit Report</span>
+                        <span class="spinner hidden"></span>
+                    </button>
+                </form>
+                <div id="confirmation"></div>
+            </div>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="section">
+            <h2 class="section-title">Tips & Education</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">🗑️</div>
+                    <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Segregate Waste</h3>
+                    <p>Separate dry and wet waste at source to make recycling easier and more effective.</p>
+                </div>
+                <div class="card">
+                    <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">🔄</div>
+                    <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Recycle Properly</h3>
+                    <p>E-waste should go to designated recycling centers, not regular bins.</p>
+                </div>
+                <div class="card">
+                    <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">🌱</div>
+                    <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Reduce & Reuse</h3>
+                    <p>Use reusable bags and bottles to minimize plastic waste generation.</p>
+                </div>
+                <div class="card">
+                    <div style="font-size: 3rem; text-align: center; margin-bottom: 1rem;">⚠️</div>
+                    <h3 style="margin-bottom: 1rem; color: var(--primary-color);">Handle Hazardous Waste</h3>
+                    <p>Batteries and chemicals require special disposal to avoid contamination.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Waste Reports History -->
+        <div class="section">
+            <h2 class="section-title">Your Waste Reports</h2>
+            <div class="table-container">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Waste Type</th>
+                            <th>Weight (kg)</th>
+                            <th>Points Earned</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                                No reports yet. Submit your first waste report above!
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>&copy; 2024 Smart Waste Management System - Created by Team Data Dreamers</p>
+        </footer>
+    </div>
+
+    <script>
+        // Global state
+        let currentUser = null;
+        let userReports = [];
+
+        // Utility functions
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function showMessage(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="alert alert-${type === 'error' ? 'error' : 'success'}">${message}</div>`;
+            setTimeout(() => element.innerHTML = '', 5000);
+        }
+
+        function showSpinner(buttonSelector, show = true) {
+            const button = document.querySelector(buttonSelector);
+            const text = button.querySelector('span:not(.spinner)');
+            const spinner = button.querySelector('.spinner');
+            
+            if (show) {
+                text.classList.add('hidden');
+                spinner.classList.remove('hidden');
+                button.disabled = true;
+            } else {
+                text.classList.remove('hidden');
+                spinner.classList.add('hidden');
+                button.disabled = false;
+            }
+        }
+
+        function scrollToAuth() {
+            document.querySelector('.auth-container').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Tab switching
+        function switchTab(event, tab) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            document.getElementById(tab + 'Form').classList.add('active');
+            
+            // Clear messages
+            ['loginMsg', 'signupMsg', 'forgotMsg'].forEach(id => {
+                document.getElementById(id).innerHTML = '';
+            });
+        }
+
+        // API functions
+        async function apiCall(endpoint, options = {}) {
+            try {
+                const response = await fetch(endpoint, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.error || `HTTP error! status: ${response.status}`);
+                }
+                
+                return data;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        // Authentication functions
+        async function signup(username, email, password) {
+            return await apiCall('/api/auth/signup', {
+                method: 'POST',
+                body: JSON.stringify({ username, email, password })
+            });
+        }
+
+        async function login(username, password) {
+            return await apiCall('/api/auth/login', {
+                method: 'POST',
+                body: JSON.stringify({ username, password })
+            });
+        }
+
+        async function logout() {
+            try {
+                await apiCall('/api/auth/logout', { method: 'POST' });
+                currentUser = null;
+                showPage('authPage');
+            } catch (error) {
+                console.error('Logout error:', error);
+                // Force logout even if API call fails
+                currentUser = null;
+                showPage('authPage');
+            }
+        }
+
+        async function getCurrentUser() {
+            return await apiCall('/api/auth/me');
+        }
+
+        async function forgotPassword(email) {
+            return await apiCall('/api/auth/forgot-password', {
+                method: 'POST',
+                body: JSON.stringify({ email })
+            });
+        }
+
+        // Waste management functions
+        async function submitWasteReport(wasteType, weight) {
+            return await apiCall('/api/waste/report', {
+                method: 'POST',
+                body: JSON.stringify({ waste_type: wasteType, weight: parseFloat(weight) })
+            });
+        }
+
+        async function getUserReports() {
+            return await apiCall('/api/waste/reports');
+        }
+
+        // UI update functions
+        function updateUserInfo(user) {
+            currentUser = user;
+            document.getElementById('welcomeMsg').textContent = `Welcome, ${user.username}!`;
+            document.getElementById('userAvatar').textContent = user.username.charAt(0).toUpperCase();
+            document.getElementById('totalPoints').textContent = user.points || 0;
+        }
+
+        function updateReportsTable(reports) {
+            const tbody = document.getElementById('reportsTableBody');
+            
+            if (!reports || reports.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-secondary);">
+                            No reports yet. Submit your first waste report above!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = reports.map(report => `
+                <tr>
+                    <td>${new Date(report.created_at).toLocaleDateString()}</td>
+                    <td>${report.waste_type}</td>
+                    <td>${report.weight}</td>
+                    <td>${report.points_earned}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Event listeners
+        document.getElementById('signupFormSubmit').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showSpinner('#signupFormSubmit button');
+            
+            try {
+                const username = document.getElementById('signupUsername').value;
+                const email = document.getElementById('signupEmail').value;
+                const password = document.getElementById('signupPassword').value;
+                
+                await signup(username, email, password);
+                showMessage('signupMsg', 'Account created successfully! Please sign in.');
+                
+                // Switch to login tab
+                document.querySelector('.auth-tab').click();
+                document.getElementById('signupFormSubmit').reset();
+                
+            } catch (error) {
+                showMessage('signupMsg', error.message, 'error');
+            } finally {
+                showSpinner('#signupFormSubmit button', false);
+            }
+        });
+
+        document.getElementById('loginFormSubmit').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showSpinner('#loginFormSubmit button');
+            
+            try {
+                const username = document.getElementById('loginUsername').value;
+                const password = document.getElementById('loginPassword').value;
+                
+                const result = await login(username, password);
+                updateUserInfo(result.user);
+                
+                // Load user reports
+                const reportsData = await getUserReports();
+                updateReportsTable(reportsData.reports);
+                
+                showPage('dashboardPage');
+                document.getElementById('loginFormSubmit').reset();
+                
+            } catch (error) {
+                showMessage('loginMsg', error.message, 'error');
+            } finally {
+                showSpinner('#loginFormSubmit button', false);
+            }
+        });
+
+        document.getElementById('forgotFormSubmit').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showSpinner('#forgotFormSubmit button');
+            
+            try {
+                const email = document.getElementById('forgotEmail').value;
+                const result = await forgotPassword(email);
+                showMessage('forgotMsg', result.message);
+                document.getElementById('forgotFormSubmit').reset();
+                
+            } catch (error) {
+                showMessage('forgotMsg', error.message, 'error');
+            } finally {
+                showSpinner('#forgotFormSubmit button', false);
+            }
+        });
+
+        document.getElementById('wasteForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            showSpinner('#wasteForm button');
+            
+            try {
+                const wasteType = document.getElementById('wasteType').value;
+                const weight = document.getElementById('weight').value;
+                
+                const result = await submitWasteReport(wasteType, weight);
+                
+                showMessage('confirmation', 
+                    `Report submitted successfully! You earned ${result.points_earned} points.`);
+                
+                // Update UI
+                document.getElementById('totalPoints').textContent = result.total_points;
+                currentUser.points = result.total_points;
+                
+                // Reload reports
+                const reportsData = await getUserReports();
+                updateReportsTable(reportsData.reports);
+                
+                document.getElementById('wasteForm').reset();
+                
+            } catch (error) {
+                showMessage('confirmation', error.message, 'error');
+            } finally {
+                showSpinner('#wasteForm button', false);
+            }
+        });
+
+        // Check if user is already logged in on page load
+        window.addEventListener('load', async () => {
+            try {
+                const result = await getCurrentUser();
+                updateUserInfo(result.user);
+                
+                const reportsData = await getUserReports();
+                updateReportsTable(reportsData.reports);
+                
+                showPage('dashboardPage');
+            } catch (error) {
+                // User not logged in, stay on auth page
+                showPage('authPage');
+            }
+        });
+    </script>
+</body>
+</html>
